@@ -2,6 +2,8 @@ package com.example.demo.controllers;
 
 import java.util.Optional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -32,6 +34,8 @@ public class UserController {
 	@Autowired
 	private BCryptPasswordEncoder bCryptPasswordEncoder;
 
+	private final Logger logger = LoggerFactory.getLogger("UserLogger");
+
 	public UserController(UserRepository userRepository, CartRepository cartRepository, BCryptPasswordEncoder encoder) {
 		this.userRepository = userRepository;
 		this.cartRepository = cartRepository;
@@ -58,10 +62,12 @@ public class UserController {
 		user.setCart(cart);
 		if(createUserRequest.getPassword().length()<7 ||
 				!createUserRequest.getPassword().equals(createUserRequest.getConfirmPassword())) {
+			logger.info("Bad request in create user API call please check your request");
 			return ResponseEntity.badRequest().build();
 		}
 		user.setPassword(bCryptPasswordEncoder.encode(createUserRequest.getPassword()));
 		userRepository.save(user);
+		logger.info("Created user with username: " + user.getUsername());
 		return ResponseEntity.ok(user);
 	}
 	
